@@ -1,6 +1,6 @@
 # Mythos API Tests
 
-This repository uses Playwright with TypeScript for API and end-to-end test automation.
+This repository uses Playwright with TypeScript for API test automation.
 
 ## Step 0. Clone and Install Dependencies
 
@@ -205,15 +205,17 @@ Store secrets and environment-specific configuration in `.env`.
 Example:
 
 ```bash
-BASE_URL=https://example.com
-API_TOKEN=your_token_here
+BASE_URL=https://api.qasandbox.ru/api/
+USERNAME=your_test_username_prefix
+PASSWORD=your_test_password
 ```
 
 Recommended example file for the team:
 
 ```bash
 BASE_URL=
-API_TOKEN=
+USERNAME=
+PASSWORD=
 ```
 
 The project includes `.env.example` as a safe template. Copy it into `.env` before running tests:
@@ -233,7 +235,20 @@ Typical file naming:
 1. `.env` for local real values
 2. `.env.example` for documented placeholders
 
-The Playwright config loads `.env` automatically and uses `BASE_URL` as `baseURL`.
+The Playwright config loads `.env` automatically and uses:
+
+1. `BASE_URL` as Playwright `baseURL`
+2. `USERNAME` and `PASSWORD` as credentials for the future `/register` flow
+
+The `/register` endpoint itself does not need to be stored in `.env`. It is a fixed API path and can stay in code.
+
+No credentials are hardcoded in the test helpers.
+
+Auth helper behavior:
+
+1. `getConfiguredCredentials()` uses `USERNAME` and `PASSWORD` exactly as provided in `.env`
+2. `createUniqueCredentialsFromEnv()` uses `USERNAME` as a prefix and appends a unique suffix for registration tests
+3. If `USERNAME` or `PASSWORD` is missing, auth helpers fail explicitly instead of silently falling back to defaults
 
 ## Step 8. Install the Playwright VS Code Extension
 
@@ -264,6 +279,18 @@ or with npm:
 
 ```bash
 npm test
+```
+
+Run the smoke test for `GET /mythology`:
+
+```bash
+npm run test:smoke
+```
+
+Run auth tests for `POST /register` and `POST /login`:
+
+```bash
+npm run test:auth
 ```
 
 Run tests in UI mode:
@@ -332,12 +359,14 @@ This is useful for catching typing mistakes early, even though Playwright can ex
 
 ## Step 11. Recommended Project Structure
 
-A simple structure that works well for Playwright projects:
+A simple structure that works well for an API-focused Playwright project:
 
 ```text
 mythos-api-tests/
   tests/
+    api/
   src/
+    config/
   playwright.config.ts
   tsconfig.json
   package.json
@@ -346,12 +375,40 @@ mythos-api-tests/
 
 What each part is for:
 
-1. `tests/` contains Playwright test files.
-2. `src/` can contain helpers, clients, fixtures, and shared utilities.
+1. `tests/api/` contains API smoke, regression, and scenario tests.
+2. `src/config/` contains environment-variable helpers and shared configuration code.
 3. `playwright.config.ts` contains the global Playwright configuration.
 4. `tsconfig.json` contains TypeScript compiler settings.
 5. `package.json` contains dependencies and runnable scripts.
 6. `.env.example` documents required environment variables.
+
+## Step 12. API Smoke Test Starter
+
+The project includes a smoke test at `tests/api/mythology.spec.ts`.
+
+What it does:
+
+1. Uses the configured Playwright `baseURL`
+2. Sends `GET /mythology`
+3. Verifies that the response is successful and JSON
+
+Why it works this way:
+
+1. `/mythology` does not require a JWT token
+2. It is a better real smoke test for this API than a placeholder endpoint
+3. `USERNAME` and `PASSWORD` stay in `.env` for the future `/register` and JWT flow
+
+## Step 13. Auth Test Starter
+
+The project also includes auth tests at `tests/api/auth.spec.ts`.
+
+What they cover:
+
+1. `POST /register` creates a new user
+2. `POST /login` returns a JWT token for that user
+3. The username is generated uniquely from the env prefix on every run to avoid duplicate-registration failures
+
+Before running it, update `.env` with the real API values for your project.
 
 ## Project Summary
 
