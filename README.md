@@ -206,8 +206,8 @@ Example:
 
 ```bash
 BASE_URL=https://api.qasandbox.ru/api/
-USERNAME=playwright_user
-PASSWORD=Playwright123!
+USERNAME=your_test_username_prefix
+PASSWORD=your_test_password
 ```
 
 Recommended example file for the team:
@@ -241,6 +241,14 @@ The Playwright config loads `.env` automatically and uses:
 2. `USERNAME` and `PASSWORD` as credentials for the future `/register` flow
 
 The `/register` endpoint itself does not need to be stored in `.env`. It is a fixed API path and can stay in code.
+
+No credentials are hardcoded in the test helpers.
+
+Auth helper behavior:
+
+1. `getConfiguredCredentials()` uses `USERNAME` and `PASSWORD` exactly as provided in `.env`
+2. `createUniqueCredentialsFromEnv()` uses `USERNAME` as a prefix and appends a unique suffix for registration tests
+3. If `USERNAME` or `PASSWORD` is missing, auth helpers fail explicitly instead of silently falling back to defaults
 
 ## Step 8. Install the Playwright VS Code Extension
 
@@ -277,6 +285,12 @@ Run the smoke test for `GET /mythology`:
 
 ```bash
 npm run test:smoke
+```
+
+Run auth tests for `POST /register` and `POST /login`:
+
+```bash
+npm run test:auth
 ```
 
 Run tests in UI mode:
@@ -383,6 +397,16 @@ Why it works this way:
 1. `/mythology` does not require a JWT token
 2. It is a better real smoke test for this API than a placeholder endpoint
 3. `USERNAME` and `PASSWORD` stay in `.env` for the future `/register` and JWT flow
+
+## Step 13. Auth Test Starter
+
+The project also includes auth tests at `tests/api/auth.spec.ts`.
+
+What they cover:
+
+1. `POST /register` creates a new user
+2. `POST /login` returns a JWT token for that user
+3. The username is generated uniquely from the env prefix on every run to avoid duplicate-registration failures
 
 Before running it, update `.env` with the real API values for your project.
 

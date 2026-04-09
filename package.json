@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
+    "test:auth": "playwright test tests/api/auth.spec.ts",
     "test:smoke": "playwright test tests/api/mythology.spec.ts",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
