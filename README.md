@@ -284,6 +284,7 @@ Behavior in CI:
 1. `npm run typecheck` runs on every workflow run
 2. `npm run test:smoke` runs on every workflow run
 3. `npm run test:auth` runs only if both secrets are present
+4. `npm run test:crud` runs only if both secrets are present
 
 ## Step 9. Install the Playwright VS Code Extension
 
@@ -326,6 +327,12 @@ Run auth tests for `POST /register` and `POST /login`:
 
 ```bash
 npm run test:auth
+```
+
+Run authenticated CRUD tests for `/mythology`:
+
+```bash
+npm run test:crud
 ```
 
 Run tests in UI mode:
@@ -442,6 +449,24 @@ What they cover:
 1. `POST /register` creates a new user
 2. `POST /login` returns a JWT token for that user
 3. The username is generated uniquely from the env prefix on every run to avoid duplicate-registration failures
+
+## Step 15. Mythology CRUD Test Starter
+
+The project also includes CRUD tests at `tests/api/mythology-crud.spec.ts`.
+
+What they cover:
+
+1. `POST /mythology` creates a new entity
+2. `PATCH /mythology/{id}` updates selected fields
+3. `PUT /mythology/{id}` replaces entity fields
+4. `DELETE /mythology/{id}` removes the created entity
+
+These tests:
+
+1. Create a fresh user through the auth helper
+2. Obtain a JWT token through `/login`
+3. Work only with newly created entities, not system records
+4. Clean up created data after the test when needed
 
 Before running it, update `.env` with the real API values for your project.
 
