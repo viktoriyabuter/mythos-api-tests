@@ -1,0 +1,9 @@
+node_modules/
+playwright-report/
+test-results/
+blob-report/
+dist/
+.git/
+.github/
+.env
+npm-debug.log*
