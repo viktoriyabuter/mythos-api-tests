@@ -642,6 +642,12 @@ Install note:
 2. Generating or serving an Allure HTML report still requires Java on the machine where the command runs
 3. The Docker image includes Java already, so Docker-based Allure generation works without extra local setup
 
+If you are adding Allure support manually in a fresh copy of the project, install the packages with:
+
+```bash
+npm install -D allure-playwright allure-commandline
+```
+
 Run tests and collect fresh Allure results:
 
 ```bash
