@@ -1,0 +1,23 @@
+x-playwright-image: &playwright-image
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: mythos-api-tests:local
+
+services:
+  tests:
+    <<: *playwright-image
+    env_file:
+      - .env
+    volumes:
+      - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results
+    command: npm test
+
+  report:
+    <<: *playwright-image
+    ports:
+      - "9323:9323"
+    volumes:
+      - ./playwright-report:/app/playwright-report
+    command: npx playwright show-report /app/playwright-report --host 0.0.0.0 --port 9323

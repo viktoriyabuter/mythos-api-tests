@@ -541,6 +541,84 @@ npm run typecheck
 
 This is useful for catching typing mistakes early, even though Playwright can execute TypeScript tests directly.
 
+## Step 13A. Run Tests in Docker
+
+The project now includes Docker support so the same test runtime can run on Windows, macOS, and Linux without requiring a local Playwright setup.
+
+Why this setup is useful:
+
+1. The Docker image is based on the official Playwright image, so the runtime is consistent across platforms
+2. Team members do not need to align local Node.js versions before running the suite
+3. HTML reports and Playwright artifacts are written back into the repository folders on the host machine
+4. The same container base can be reused later when UI tests are added to the course project
+
+Important:
+
+1. Docker does not force `CI=1`, so local container runs keep the same Playwright behavior as local terminal runs
+2. If you later want strict CI behavior inside Docker, pass `CI=1` explicitly from your pipeline
+
+Security note:
+
+1. The local `.env` file is not copied into the Docker image because it is excluded by `.dockerignore`
+2. Docker Compose passes values from `.env` only at container start through `env_file`
+3. This is safer than baking credentials into the image, but the secrets still exist on your local machine and inside the running container environment
+4. Use a dedicated test account and never store production credentials in this project
+
+Build the image:
+
+```bash
+docker compose build tests
+```
+
+Run the full suite in Docker:
+
+```bash
+docker compose run --rm tests
+```
+
+Run only smoke tests in Docker:
+
+```bash
+docker compose run --rm tests npm run test:smoke
+```
+
+Or use the npm wrappers:
+
+```bash
+npm run docker:build
+npm run docker:test
+npm run docker:test:smoke
+```
+
+The Docker run still expects the same `.env` file as the local run. If you have not created it yet, copy the example first:
+
+```bash
+cp .env.example .env
+```
+
+If you are using PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+After the run finishes, the generated files stay in:
+
+1. `playwright-report/` for the HTML report
+2. `test-results/` for traces, attachments, and other raw artifacts
+
+To open the HTML report from Docker on port `9323`, run:
+
+```bash
+docker compose run --rm --service-ports report
+```
+
+or:
+
+```bash
+npm run docker:report
+```
+
 ## Step 14. Recommended Project Structure
 
 A simple structure that works well for an API-focused Playwright project:
@@ -555,6 +633,9 @@ mythos-api-tests/
   src/
     api/
     config/
+  Dockerfile
+  compose.yaml
+  .dockerignore
   playwright.config.ts
   tsconfig.json
   package.json
@@ -572,11 +653,14 @@ What each part is for:
 5. `src/api/` contains reusable API request helpers
 6. `src/config/` contains environment-variable helpers and shared configuration code
 7. `playwright.config.ts` contains the global Playwright configuration
-8. `tsconfig.json` contains TypeScript compiler settings
-9. `package.json` contains dependencies and runnable scripts
-10. `.env.example` documents required environment variables
-11. `playwright-report/` is generated after test runs for HTML reporting
-12. `test-results/` is generated after test runs for traces and attachments
+8. `Dockerfile` contains the cross-platform Playwright runtime for containerized runs
+9. `compose.yaml` contains ready-to-run Docker services for tests and report viewing
+10. `.dockerignore` keeps the Docker build context clean and avoids copying local artifacts into the image
+11. `tsconfig.json` contains TypeScript compiler settings
+12. `package.json` contains dependencies and runnable scripts
+13. `.env.example` documents required environment variables
+14. `playwright-report/` is generated after test runs for HTML reporting
+15. `test-results/` is generated after test runs for traces and attachments
 
 ## Step 15. API Smoke Test Starter
 
@@ -737,4 +821,4 @@ This setup gives you:
 6. Clear HTML report and trace artifact handling
 7. Shared fixtures for auth and temporary test data cleanup
 8. Contract-level assertions for success and error responses
-9. Easy test execution from both VS Code and the terminal
+9. Easy test execution from both VS Code, the terminal, and Docker
