@@ -112,3 +112,12 @@ export const deleteMythologyEntityWithoutAuth = (
   request: APIRequestContext,
   id: number,
 ): Promise<APIResponse> => request.delete(`mythology/${id}`);
+
+export const postMythologyEntity = (
+  request: APIRequestContext,
+  token: string,
+  id: number,
+): Promise<APIResponse> =>
+  request.post(`mythology/${id}`, {
+    headers: createAuthHeaders(token),
+  });
