@@ -10,6 +10,7 @@ import {
   expectMythologyEntityContract,
   expectMythologyEntityListContract,
 } from '../support/contract-assertions';
+import { API_ERROR_PATTERNS } from '../support/api-errors';
 
 test(
   'GET /mythology returns successful JSON response',
@@ -216,4 +217,5 @@ test('GET /mythology/{id} returns 404 for a non-existent entity', { tag: '@read'
   );
 
   expectApiErrorBodyContract(body);
+  expect(body.error).toMatch(API_ERROR_PATTERNS.NOT_FOUND)
 });
