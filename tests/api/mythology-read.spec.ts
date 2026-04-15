@@ -48,16 +48,16 @@ for (const category of mythologyCategories) {
     { tag: '@read' },
     async ({ request, debugApiCall }) => {
       const response = await test.step(`Fetch mythology list filtered by ${category}`, async () =>
-        debugApiCall(
-          {
+          debugApiCall(
+            {
             label: `Fetch mythology list filtered by ${category}`,
-            request: {
-              method: 'GET',
-              url: `mythology?category=${category}`,
+              request: {
+                method: 'GET',
+                url: `mythology?category=${category}`,
+              },
             },
-          },
-          () => getMythologyList(request, { category }),
-        ),
+            () => getMythologyList(request, { category }),
+          ),
       );
 
       await expect(response).toBeOK();
@@ -69,9 +69,15 @@ for (const category of mythologyCategories) {
       );
 
       expectMythologyEntityListContract(body);
+      expect(body.length).toBeGreaterThanOrEqual(0);
 
       for (const entity of body) {
         expect(entity.category).toBe(category);
+        expect(entity.id).toBeDefined();
+        expect(typeof entity.name).toBe('string');
+        expect(entity.name.length).toBeGreaterThan(0);
+        expect(typeof entity.desc).toBe('string');
+        expect(entity.desc.length).toBeGreaterThan(0);
       }
     },
   );
