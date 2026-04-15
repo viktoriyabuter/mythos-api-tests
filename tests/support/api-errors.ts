@@ -5,4 +5,5 @@ export const API_ERROR_PATTERNS = {
     /Запрещено! Базовые персонажи \(ID 1-31\) доступны только для чтения/i,
   METHOD_NOT_ALLOWED:
     /Метод POST не поддерживается. Используйте GET, PUT, PATCH или DELETE/i,
+  GRAPHQL_UNAUTHORIZED: /авториз|unauthor|auth|доступ|jwt|token/i,
 };

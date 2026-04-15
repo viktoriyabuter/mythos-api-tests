@@ -82,3 +82,9 @@ export function expectApiErrorBodyContract(
     expect(candidate.success).toEqual(expect.any(Boolean));
   }
 }
+
+export function expectGraphqlErrorBody(body: any) {
+  expect(body.errors).toBeDefined();
+  expect(Array.isArray(body.errors)).toBe(true);
+  expect(body.errors.length).toBeGreaterThan(0);
+}
