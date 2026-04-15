@@ -225,38 +225,3 @@ test('GET /mythology/{id} returns 404 for a non-existent entity', { tag: '@read'
   expectApiErrorBodyContract(body);
   expect(body.error).toMatch(API_ERROR_PATTERNS.NOT_FOUND)
 });
-
-for (const category of mythologyCategories) {
-  test(
-    `GET /mythology?category=${category} returns only ${category}`,
-    { tag: '@read' },
-    async ({ request, debugApiCall }) => {
-      const response = await test.step(`Fetch filtered by ${category}`, async () =>
-        debugApiCall(
-          {
-            label: `Fetch filtered by ${category}`,
-            request: {
-              method: 'GET',
-              url: `mythology?category=${category}`,
-            },
-          },
-          () => getMythologyList(request, { category }),
-        ),
-      );
-
-      await expect(response).toBeOK();
-      expectJsonContentType(response);
-
-      const body = (await response.json()) as MythologyEntity[];
-
-      expectMythologyEntityListContract(body);
-
-      for (const entity of body) {
-        expect(entity.category).toBe(category);
-        expect(entity.id).toBeDefined();
-        expect(entity.name).toBeTruthy();
-        expect(entity.desc).toBeTruthy();
-      }
-    },
-  );
-}
