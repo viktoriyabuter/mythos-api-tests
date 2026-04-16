@@ -70,4 +70,16 @@ export const invalidCreateMythologyCases: InvalidCreateMythologyCase[] = [
       name: '',
     }),
   },
+{
+  name: 'missing category field',
+  payload: (() => {
+    const payload = createMythologyPayload({
+      desc: 'Missing category should trigger validation error.',
+    });
+
+    delete (payload as any).category;
+
+    return payload;
+  })(),
+}
 ];

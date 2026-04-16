@@ -5,6 +5,7 @@ import {
   deleteMythologyEntityWithoutAuth,
   patchMythologyEntity,
   patchMythologyEntityWithoutAuth,
+  postMythologyEntity,
   replaceMythologyEntity,
   replaceMythologyEntityWithoutAuth,
 } from '../../src/api/mythology';
@@ -19,6 +20,7 @@ import {
   expectApiErrorBodyContract,
   expectJsonContentType,
 } from '../support/contract-assertions';
+import { API_ERROR_PATTERNS } from '../support/api-errors';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -256,6 +258,7 @@ for (const systemEntityId of protectedSystemEntityIds) {
       );
 
       expectApiErrorBodyContract(body);
+      expect(body.error).toMatch(API_ERROR_PATTERNS.FORBIDDEN)
     },
   );
 
@@ -288,6 +291,41 @@ for (const systemEntityId of protectedSystemEntityIds) {
       );
 
       expectApiErrorBodyContract(body);
+      expect(body.error).toMatch(API_ERROR_PATTERNS.FORBIDDEN)
+    },
+  );
+
+test(
+    `POST /mythology/{id} returns 405 for not allowed method entity ${systemEntityId}`,
+    { tag: '@negative' },
+    async ({ request, authToken, debugApiCall }) => {
+      const response = await test.step(`Try to post entity ${systemEntityId}`, async () =>
+        debugApiCall(
+          {
+            label: `Try to post entity ${systemEntityId}`,
+            request: {
+              method: 'POST',
+              url: `mythology/${systemEntityId}`,
+              headers: {
+                Authorization: `Bearer ${authToken}`,
+              },
+            },
+          },
+          () => postMythologyEntity(request, authToken, systemEntityId),
+        ),
+      );
+
+      expect(response.status()).toBe(405);
+      expectJsonContentType(response);
+      
+
+      const body = await test.step(
+        `Read entity post response for ${systemEntityId}`,
+        async () => (await response.json()) as unknown,
+      );
+      
+      expectApiErrorBodyContract(body);
+      expect(body.error).toMatch(API_ERROR_PATTERNS.METHOD_NOT_ALLOWED);
     },
   );
 }

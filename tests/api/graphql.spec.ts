@@ -18,6 +18,8 @@ import {
   type SoulSummary,
 } from '../../src/api/graphql';
 import { expect, test } from '../fixtures/api-test';
+import { API_ERROR_PATTERNS } from '../support/api-errors';
+import { expectGraphqlErrorBody } from '../support/contract-assertions';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -418,4 +420,72 @@ test('GraphQL createSoul, patchSoulDeeds, and banishSoul handle an authenticated
       }
     }
   }
+});
+
+test('GraphQL createSoul without JWT returns authorization error', { tag: '@graphql' }, async ({
+  request,
+  debugApiCall,
+}) => {
+  const soulName = `Unauthorized Soul ${Date.now()}`;
+
+  const response = await test.step(
+    'Attempt to createSoul without authentication',
+    async () =>
+      debugApiCall(
+        createGraphqlMetadata('Unauthorized CreateSoul', {
+          operationName: 'CreateSoul',
+          query: `
+            mutation CreateSoul($input: SoulInput!) {
+              createSoul(input: $input) {
+                id
+                name
+                status
+              }
+            }
+          `,
+          variables: {
+            input: {
+              name: soulName,
+              weight: 10,
+            },
+          },
+        }),
+        () =>
+          request.post(graphqlUrl, {
+            data: {
+              operationName: 'CreateSoul',
+              query: `
+                mutation CreateSoul($input: SoulInput!) {
+                  createSoul(input: $input) {
+                    id
+                    name
+                    status
+                  }
+                }
+              `,
+              variables: {
+                input: {
+                  name: soulName,
+                  weight: 10,
+                },
+              },
+            },
+            headers: {
+              'content-type': 'application/json',
+              // np authorization header
+            },
+          }),
+      ),
+  );
+
+  await expect(response).toBeOK();
+  expectJsonContentType(response);
+
+  const body = await test.step(
+    'Read GraphQL response body',
+    async () => (await response.json()) as GraphqlResponseBody<{ createSoul?: SoulDetails }>,
+  );
+  expectGraphqlErrorBody(body);
+  expect(body.data?.createSoul).toBeNull();
+  expect(body.errors![0]?.message).toMatch(API_ERROR_PATTERNS.GRAPHQL_UNAUTHORIZED);
 });
